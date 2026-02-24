@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 interface Folder {
@@ -14,6 +15,8 @@ export default function Dashboard() {
   const [error, setError] = useState("");
   const [verifyInputs, setVerifyInputs] = useState<{ [key: number]: string }>({});
 const [verifiedRows, setVerifiedRows] = useState<{ [key: number]: boolean }>({});
+  const router = useRouter();
+
 
 const handleInputChange = (folderId: number, value: string) => {
   setVerifyInputs((prev) => ({
@@ -173,6 +176,8 @@ const handleVerify = async (folderId: number) => {
         >
           Create Folder
         </button>
+
+        <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" onClick={() => router.push(`/screen`)}> Screens</button>
       </div>
 
       <table className="w-full bg-white rounded shadow text-black">

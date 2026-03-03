@@ -89,6 +89,12 @@ export default function FolderPage() {
       <h1 className="text-2xl font-bold mb-6">
         Folder {id}
       </h1>
+         <button
+            onClick={openFilePicker}
+            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+          >
+            Upload Image / Video
+          </button>
 
     
       <input
@@ -106,12 +112,7 @@ export default function FolderPage() {
           <p className="mb-4 text-gray-500">
             No images or videos found
           </p>
-          <button
-            onClick={openFilePicker}
-            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-          >
-            Upload Image / Video
-          </button>
+      
         </div>
       ) : (
        
@@ -141,7 +142,7 @@ export default function FolderPage() {
                 
                 }
                 
-                 
+                
         <button
           onClick={() => handleDelete(file.id)}
           className="absolute top-2 right-2 bg-red-600 text-white text-xs px-2 py-1 rounded hover:bg-red-700"

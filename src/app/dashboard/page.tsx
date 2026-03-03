@@ -109,7 +109,6 @@ const handleVerify = async (folderId: number) => {
     }
   };
 
-  // Fetch folders
   const fetchFolders = async () => {
     try {
       setLoading(true);
@@ -117,7 +116,7 @@ const handleVerify = async (folderId: number) => {
     const res = await fetch(
   `${process.env.NEXT_PUBLIC_API_URL}/api/folders`,
   {
-    method: "GET", // optional for GET, but good practice
+    method: "GET", 
     headers: {
       "Content-Type": "application/json",
       "ngrok-skip-browser-warning": "true",
@@ -218,17 +217,17 @@ const handleVerify = async (folderId: number) => {
                     href={`/folder/${folder.id}`}
                     className="text-blue-600 underline"
                   >
-                    Open
+                    Upload
                   </a>
                 </td>
-                <td className="p-3">
+                {/* <td className="p-3">
                   <a
                     href={`${folder.id}`}
                     className="text-blue-600 underline"
                   >
                     preview
                   </a>
-                </td>
+                </td> */}
                 <td className="p-3">
                   <a
                     href="#"

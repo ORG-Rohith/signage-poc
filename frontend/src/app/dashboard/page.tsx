@@ -59,7 +59,7 @@ const handleVerify = async (folderId: number) => {
   if (!code) return;
 
   try {
-    const res = await fetch(`https://instructively-liturgistic-madie.ngrok-free.dev/screen/verify`, {
+    const res = await fetch(`http://3.6.118.216/screen/verify`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -92,7 +92,7 @@ const handleVerify = async (folderId: number) => {
     e.preventDefault(); 
 
     try {
-      const res = await fetch(`https://instructively-liturgistic-madie.ngrok-free.dev/screen`, {
+      const res = await fetch(`http://3.6.118.216/screen`, {
         method: "POST",
         headers: {
       "Content-Type": "application/json",
@@ -112,9 +112,9 @@ const handleVerify = async (folderId: number) => {
   const fetchFolders = async () => {
     try {
       setLoading(true);
-    //   const res = await fetch(`https://instructively-liturgistic-madie.ngrok-free.dev/api/folders`);
+    //   const res = await fetch(`http://3.6.118.216/api/folders`);
     const res = await fetch(
-  `https://instructively-liturgistic-madie.ngrok-free.dev/api/folders`,
+  `http://3.6.118.216/api/folders`,
   {
     method: "GET", 
     headers: {
@@ -144,7 +144,7 @@ const handleVerify = async (folderId: number) => {
   const createFolder = async () => {
     if (!folderName.trim()) return;
 
-    await fetch(`https://instructively-liturgistic-madie.ngrok-free.dev/api/folders`, {
+    await fetch(`http://3.6.118.216/api/folders`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

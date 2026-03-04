@@ -19,7 +19,7 @@ const Page = () => {
 
   const handleStatusChange = async (screenId: number) => {
   try {
-    const res = await fetch(`https://instructively-liturgistic-madie.ngrok-free.dev/screen/statusupdate`, {
+    const res = await fetch(`http://3.6.118.216/screen/statusupdate`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -50,7 +50,7 @@ const Page = () => {
 
   const fetchScreens = async () => {
     try {
-      const res = await fetch(`https://instructively-liturgistic-madie.ngrok-free.dev/screen/getall`,
+      const res = await fetch(`http://3.6.118.216/screen/getall`,
           {
     method: "GET", 
     headers: {

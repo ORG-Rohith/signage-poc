@@ -42,10 +42,10 @@ COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/generated ./generated
 
 # Create uploads directory for file uploads
-RUN mkdir -p uploads && chown -R app:app /app
+RUN mkdir -p uploads && chown -R app:appgroup /app
 
 # Ensure all files are owned by the non-root user
-RUN chown -R app:app /app
+RUN chown -R app:appgroup /app
 USER app
 
 EXPOSE 3001

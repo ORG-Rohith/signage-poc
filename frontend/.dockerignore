@@ -1,0 +1,9 @@
+node_modules
+.next
+dist
+.git
+.vscode
+Dockerfile
+.dockerignore
+npm-debug.log
+.DS_Store

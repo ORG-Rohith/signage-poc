@@ -1,27 +1,94 @@
 version: "3.9"
 
 services:
-  nextjs-frontend:
-    image: nextjs-frontend
-    container_name: nextjs-frontend
-    restart: always
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: signage-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: ${DB_NAME:-signage_db}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - signage-network
+
+  # NestJS Backend API
+  backend:
+    image: ${BACKEND_IMAGE:-signage-backend:latest}
+    container_name: signage-backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:${DB_PORT:-5432}/${DB_NAME:-signage_db}
+      PORT: 3001
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - uploads_data:/app/uploads
+    healthcheck:
+      test: ["CMD", "curl", "-fS", "http://localhost:3001/"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    networks:
+      - signage-network
+
+  # Next.js Frontend
+  frontend:
+    image: ${FRONTEND_IMAGE:-signage-frontend:latest}
+    container_name: signage-frontend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://signage-backend:3001}
     expose:
       - "3000"
-
-  nginx:
-    image: nginx:alpine
-    container_name: nginx-proxy
-    restart: always
-    ports:
-      - "80:80"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
-      - nextjs-frontend
+      - backend
+    healthcheck:
+      test: ["CMD", "curl", "-fS", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
     networks:
       - signage-network
+
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: signage-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - nginx_logs:/var/log/nginx
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - signage-network
+
+volumes:
+  postgres_data:
+  uploads_data:
+  nginx_logs:
 
 networks:
   signage-network:

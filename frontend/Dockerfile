@@ -35,7 +35,7 @@ COPY --from=builder /app/public ./public
 
 # Copy next config if present (not required at runtime but harmless)
 # COPY --from=builder /app/next.config.* ./ 2>/dev/null || true
-COPY --from=builder /app/next.config.ts ./
+COPY --from=builder /app/next.config.js ./
 # Ensure files are owned by the non-root user
 RUN chown -R app:appgroup /app
 USER app

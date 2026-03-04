@@ -49,7 +49,7 @@ const Page = () => {
 
   // 🔥 SOCKET WITH CONNECTION STATUS
   useEffect(() => {
-    const socket = io(`http://3.6.118.216`, {
+    const socket = io(`http://localhost:3001`, {
       transports: ["websocket"],
       reconnection: true,
     });
@@ -90,7 +90,7 @@ const Page = () => {
         setLoading(true);
 
         const res = await fetch(
-          `http://3.6.118.216/screen/${id}`,
+          `http://localhost:3001/screen/${id}`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -104,7 +104,7 @@ const Page = () => {
 
         if (data.folderId) {
           const resFiles = await fetch(
-            `http://3.6.118.216/api/files/${data.folderId}`,
+            `http://localhost:3001/api/files/${data.folderId}`,
             {
               headers: {
                 "Content-Type": "application/json",
@@ -187,7 +187,7 @@ const Page = () => {
   const updateStatus = async (status: "online" | "offline") => {
     try {
       await fetch(
-        `http://3.6.118.216/screen/status/${id}`,
+        `http://localhost:3001/screen/status/${id}`,
         {
           method: "PATCH",
           headers: {
@@ -206,7 +206,7 @@ const Page = () => {
   useEffect(() => {
     const handleUnload = () => {
       navigator.sendBeacon(
-        `http://3.6.118.216/screen/status/${id}`,
+        `http://localhost:3001/screen/status/${id}`,
         new Blob([JSON.stringify({ status: "offline" })], {
           type: "application/json",
         })
@@ -272,7 +272,7 @@ const Page = () => {
             return isVideo ? (
               <video
                 key={file.id}
-                src={`http://3.6.118.216/uploads/${file.filename}`}
+                src={`http://localhost:3001/uploads/${file.filename}`}
                 autoPlay
                 muted
                 className="max-w-full max-h-screen object-contain"
@@ -280,7 +280,7 @@ const Page = () => {
             ) : (
               <img
                 key={file.id}
-                src={`http://3.6.118.216/uploads/${file.filename}`}
+                src={`http://localhost:3001/uploads/${file.filename}`}
                 alt={file.filename}
                 className="max-w-full max-h-screen object-contain"
               />

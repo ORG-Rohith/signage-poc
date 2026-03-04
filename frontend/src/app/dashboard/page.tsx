@@ -59,7 +59,7 @@ const handleVerify = async (folderId: number) => {
   if (!code) return;
 
   try {
-    const res = await fetch(`http://3.6.118.216/screen/verify`, {
+    const res = await fetch(`http://localhost:3001/screen/verify`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -92,7 +92,7 @@ const handleVerify = async (folderId: number) => {
     e.preventDefault(); 
 
     try {
-      const res = await fetch(`http://3.6.118.216/screen`, {
+      const res = await fetch(`http://localhost:3001/screen`, {
         method: "POST",
         headers: {
       "Content-Type": "application/json",
@@ -112,9 +112,9 @@ const handleVerify = async (folderId: number) => {
   const fetchFolders = async () => {
     try {
       setLoading(true);
-    //   const res = await fetch(`http://3.6.118.216/api/folders`);
+    //   const res = await fetch(` http://localhost:3001/api/folders`);
     const res = await fetch(
-  `http://3.6.118.216/api/folders`,
+  `http://localhost:3001/api/folders`,
   {
     method: "GET", 
     headers: {
@@ -144,7 +144,7 @@ const handleVerify = async (folderId: number) => {
   const createFolder = async () => {
     if (!folderName.trim()) return;
 
-    await fetch(`http://3.6.118.216/api/folders`, {
+    await fetch(`http://localhost:3001/api/folders`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

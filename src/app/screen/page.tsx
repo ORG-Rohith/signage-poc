@@ -19,7 +19,7 @@ const Page = () => {
 
   const handleStatusChange = async (screenId: number) => {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/screen/statusupdate`, {
+    const res = await fetch(`https://instructively-liturgistic-madie.ngrok-free.dev/screen/statusupdate`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -50,9 +50,9 @@ const Page = () => {
 
   const fetchScreens = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/screen/getall`,
+      const res = await fetch(`https://instructively-liturgistic-madie.ngrok-free.dev/screen/getall`,
           {
-    method: "GET", // optional for GET, but good practice
+    method: "GET", 
     headers: {
       "Content-Type": "application/json",
       "ngrok-skip-browser-warning": "true",

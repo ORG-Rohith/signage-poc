@@ -59,7 +59,7 @@ const handleVerify = async (folderId: number) => {
   if (!code) return;
 
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/screen/verify`, {
+    const res = await fetch(`https://instructively-liturgistic-madie.ngrok-free.dev/screen/verify`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -92,7 +92,7 @@ const handleVerify = async (folderId: number) => {
     e.preventDefault(); 
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/screen`, {
+      const res = await fetch(`https://instructively-liturgistic-madie.ngrok-free.dev/screen`, {
         method: "POST",
         headers: {
       "Content-Type": "application/json",
@@ -112,9 +112,9 @@ const handleVerify = async (folderId: number) => {
   const fetchFolders = async () => {
     try {
       setLoading(true);
-    //   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/folders`);
+    //   const res = await fetch(`https://instructively-liturgistic-madie.ngrok-free.dev/api/folders`);
     const res = await fetch(
-  `${process.env.NEXT_PUBLIC_API_URL}/api/folders`,
+  `https://instructively-liturgistic-madie.ngrok-free.dev/api/folders`,
   {
     method: "GET", 
     headers: {
@@ -144,7 +144,7 @@ const handleVerify = async (folderId: number) => {
   const createFolder = async () => {
     if (!folderName.trim()) return;
 
-    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/folders`, {
+    await fetch(`https://instructively-liturgistic-madie.ngrok-free.dev/api/folders`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

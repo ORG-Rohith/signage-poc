@@ -11,8 +11,13 @@ RUN apk add --no-cache python3 make g++ git \
   && npm ci \
   && apk del git
 
-# Copy source and build
+# Copy source
 COPY . .
+
+# 🔥 ADD THIS LINE (Prisma client generation)
+RUN npx prisma generate
+
+# Build the app
 RUN npm run build
 
 
@@ -32,6 +37,9 @@ RUN apk add --no-cache tini curl \
 # Copy built app from builder
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/prisma ./prisma
+
+# 🔥 ADD THIS LINE (copy generated prisma client)
+COPY --from=builder /app/generated ./generated
 
 # Create uploads directory for file uploads
 RUN mkdir -p uploads && chown -R app:app /app

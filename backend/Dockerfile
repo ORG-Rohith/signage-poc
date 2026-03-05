@@ -37,6 +37,8 @@ RUN apk add --no-cache tini curl \
 # Copy built app from builder
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/prisma ./prisma
+# Copy prisma config so runtime has access to datasource mappings
+COPY --from=builder /app/prisma.config.cjs ./prisma.config.cjs
 
 # 🔥 ADD THIS LINE (copy generated prisma client)
 COPY --from=builder /app/generated ./generated

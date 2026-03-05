@@ -27,9 +27,11 @@ services:
     image: ${BACKEND_IMAGE:-signage-backend:latest}
     container_name: signage-backend
     restart: unless-stopped
+    env_file:
+      - .env
     environment:
       NODE_ENV: ${NODE_ENV:-production}
-      DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:${DB_PORT:-5432}/${DB_NAME:-signage_db}
+      DATABASE_URL: ${DATABASE_URL}
       PORT: 3001
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://signage-backend:3001}
     ports:
@@ -39,6 +41,8 @@ services:
         condition: service_healthy
     volumes:
       - uploads_data:/app/uploads
+    # Run migrations before starting the backend to ensure schema exists
+    command: sh -c "npx prisma migrate deploy --schema=./prisma/schema.prisma && npm run start:prod"
     healthcheck:
       test: ["CMD", "curl", "-fS", "http://localhost:3001/"]
       interval: 30s

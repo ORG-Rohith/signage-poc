@@ -1,7 +1,7 @@
 import { BadRequestException, Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
 import { ScreenService } from './screen.service';
 
-@Controller('screen')
+@Controller('api/screen')
 export class ScreenController {
 
     constructor(private readonly screenService: ScreenService) {}

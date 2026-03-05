@@ -9,6 +9,7 @@ import {
   OnGatewayDisconnect
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { Logger } from '@nestjs/common';
 
 @WebSocketGateway({
   cors: { origin: '*' } 
@@ -17,29 +18,35 @@ export class FileGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   @WebSocketServer()
   server: Server;
 
+  private logger = new Logger('FileGateway');
+
   afterInit(server: Server) {
-    console.log('WebSocket initialized');
+    this.logger.log('WebSocket (FileGateway) initialized');
   }
 
   handleConnection(client: Socket) {
-    console.log('Client connected:', client.id);
+    this.logger.log(`Client connected: ${client.id}, Total connected: ${this.server.engine.clientsCount}`);
+    this.logger.debug(`Connection details - Address: ${client.handshake.address}`);
   }
 
   handleDisconnect(client: Socket) {
-    console.log('Client disconnected:', client.id);
+    this.logger.log(`Client disconnected: ${client.id}, Total connected: ${this.server.engine.clientsCount}`);
   }
 
   @SubscribeMessage('joinFolder')
   joinFolder(@MessageBody() folderId: string, @ConnectedSocket() client: Socket) {
     client.join(folderId);
-    console.log(`Client ${client.id} joined folder ${folderId}`);
+    this.logger.log(`Client ${client.id} joined folder ${folderId}`);
+    this.logger.debug(`Room members in folder ${folderId}: ${this.server.sockets.adapter.rooms.get(folderId)?.size || 0}`);
   }
 
   fileAdded(folderId: string, file: any) {
+    this.logger.debug(`Broadcasting fileAdded event to folder ${folderId}:`, file);
     this.server.to(folderId).emit('fileAdded', file);
   }
 
   fileDeleted(folderId: string, fileId: number) {
+    this.logger.debug(`Broadcasting fileDeleted event to folder ${folderId}, fileId: ${fileId}`);
     this.server.to(folderId).emit('fileDeleted', fileId);
   }
 }

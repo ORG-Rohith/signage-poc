@@ -1,32 +1,36 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { Logger } from '@nestjs/common';
 import * as express from 'express';
 import { join } from 'path';
 
-
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-    // app.enableCors();
-// app.enableCors({
-//   origin: [
-//     // 'http://localhost:3000',
-//     // 'http://192.168.0.108:3000',
+  // Set log levels based on environment
+  const logLevels = process.env.LOG_LEVEL 
+    ? process.env.LOG_LEVEL.split(',') as any[]
+    : ['log', 'error', 'warn', 'debug'];
 
-//   ],
-//   credentials: true,
-// });
-  // app.enableCors({
-  //   origin: true, // allow all origins (for testing)
-  // });
+  const app = await NestFactory.create(AppModule, {
+    logger: logLevels,
+  });
 
-    app.enableCors({ origin: '*' }); // For testing, allow all origins
+  const logger = new Logger('Bootstrap');
 
-// ✅ Serve uploads folder correctly
+  app.enableCors({ origin: '*' }); // For testing, allow all origins
+
+  // ✅ Serve uploads folder correctly
   const uploadsPath = join(process.cwd(), 'uploads');
 
-  console.log('Serving uploads from:', uploadsPath);
+  logger.debug(`Serving uploads from: ${uploadsPath}`);
+  logger.log(`Application is starting on port ${process.env.PORT ?? 3001}`);
 
   app.use('/uploads', express.static(uploadsPath));
-  await app.listen(process.env.PORT ?? 3001);
+  
+  const port = process.env.PORT ?? 3001;
+  await app.listen(port);
+  
+  logger.log(`Server listening on port ${port}`);
+  logger.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+  logger.log(`Log level: ${process.env.LOG_LEVEL || 'debug,log,warn,error'}`);
 }
 bootstrap();

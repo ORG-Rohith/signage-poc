@@ -3,6 +3,10 @@
 FROM node:20-alpine AS builder
 WORKDIR /app
 
+# Accept NEXT_PUBLIC_API_URL as a build-arg so it is baked into the Next build
+ARG NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://signage-backend:3001}
+
 # Copy lockfile first for reproducible installs and layer caching
 COPY package.json package-lock.json ./
 
@@ -13,6 +17,7 @@ RUN apk add --no-cache python3 make g++ git \
 
 # Copy source and build
 COPY . .
+# Build the Next app — NEXT_PUBLIC_API_URL will be available to the build
 RUN npm run build
 
 

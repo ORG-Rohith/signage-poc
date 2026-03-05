@@ -21,7 +21,7 @@ export default function FolderPage() {
   const handleDelete = async (id: number) => {
   try {
     console.log("------------",id);
-    await fetch(`http://localhost:3001/api/files/${id}`, {
+    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/files/${id}`, {
       method: "DELETE",
     });
 
@@ -39,7 +39,7 @@ export default function FolderPage() {
     try {
       setLoading(true);
       const res = await fetch(
-        `http://localhost:3001/api/files/${id}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/files/${id}`,
         {
     method: "GET", // optional for GET, but good practice
     headers: {
@@ -76,7 +76,7 @@ export default function FolderPage() {
     formData.append("file", selectedFile);
     formData.append("folderId", id as string);
 
-    await fetch(`http://localhost:3001/api/files/upload`, {
+    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/files/upload`, {
       method: "POST",
       body: formData,
     });
@@ -125,15 +125,14 @@ export default function FolderPage() {
               >
                 {file.filename.match(/\.(mp4|webm|ogg)$/i) ? (
                   <video
-                    src={`http://localhost:3001/uploads/${file.filename}`}
+                    src={`${process.env.NEXT_PUBLIC_API_URL}/uploads/${file.filename}`}
                     controls
                     className="w-full h-full object-cover"
                   />
                   
                 ) : (
                   <img
-                    // src={`http://localhost:3001/uploads/${file.filename}`}
-                     src={`http://localhost:3001/uploads/${file.filename}`}
+                    src={`${process.env.NEXT_PUBLIC_API_URL}/uploads/${file.filename}`}
 
                     alt={file.filename}
                     className="w-full h-full object-cover"

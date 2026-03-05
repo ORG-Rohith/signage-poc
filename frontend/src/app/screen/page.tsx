@@ -19,7 +19,7 @@ const Page = () => {
 
   const handleStatusChange = async (screenId: number) => {
   try {
-    const res = await fetch(`http://localhost:3001/screen/statusupdate`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/screen/statusupdate`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -50,7 +50,7 @@ const Page = () => {
 
   const fetchScreens = async () => {
     try {
-      const res = await fetch(`http://localhost:3001/screen/getall`,
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/screen/getall`,
           {
     method: "GET", 
     headers: {

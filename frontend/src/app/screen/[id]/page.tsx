@@ -49,7 +49,7 @@ const Page = () => {
 
   // 🔥 SOCKET WITH CONNECTION STATUS
   useEffect(() => {
-    const socket = io(`http://localhost:3001`, {
+    const socket = io(`${process.env.NEXT_PUBLIC_API_URL}`, {
       transports: ["websocket"],
       reconnection: true,
     });
@@ -90,7 +90,7 @@ const Page = () => {
         setLoading(true);
 
         const res = await fetch(
-          `http://localhost:3001/screen/${id}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/api/screen/${id}`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -104,7 +104,7 @@ const Page = () => {
 
         if (data.folderId) {
           const resFiles = await fetch(
-            `http://localhost:3001/api/files/${data.folderId}`,
+            `${process.env.NEXT_PUBLIC_API_URL}/api/files/${data.folderId}`,
             {
               headers: {
                 "Content-Type": "application/json",
@@ -187,7 +187,7 @@ const Page = () => {
   const updateStatus = async (status: "online" | "offline") => {
     try {
       await fetch(
-        `http://localhost:3001/screen/status/${id}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/screen/status/${id}`,
         {
           method: "PATCH",
           headers: {
@@ -206,7 +206,7 @@ const Page = () => {
   useEffect(() => {
     const handleUnload = () => {
       navigator.sendBeacon(
-        `http://localhost:3001/screen/status/${id}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/screen/status/${id}`,
         new Blob([JSON.stringify({ status: "offline" })], {
           type: "application/json",
         })
@@ -272,7 +272,7 @@ const Page = () => {
             return isVideo ? (
               <video
                 key={file.id}
-                src={`http://localhost:3001/uploads/${file.filename}`}
+                src={`${process.env.NEXT_PUBLIC_API_URL}/uploads/${file.filename}`}
                 autoPlay
                 muted
                 className="max-w-full max-h-screen object-contain"
@@ -280,7 +280,7 @@ const Page = () => {
             ) : (
               <img
                 key={file.id}
-                src={`http://localhost:3001/uploads/${file.filename}`}
+                src={`${process.env.NEXT_PUBLIC_API_URL}/uploads/${file.filename}`}
                 alt={file.filename}
                 className="max-w-full max-h-screen object-contain"
               />

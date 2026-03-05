@@ -10,6 +10,8 @@ generator client {
   moduleFormat    = "cjs"
 }
 
+
+
 datasource db {
   provider = "postgresql"
 }

@@ -31,7 +31,6 @@ services:
       - .env
     environment:
       NODE_ENV: ${NODE_ENV:-production}
-      DATABASE_URL: ${DATABASE_URL}
       PORT: 3001
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://signage-backend:3001}
     ports:

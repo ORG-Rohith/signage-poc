@@ -59,6 +59,8 @@ self.addEventListener("fetch", (event) => {
     );
   }
 
+
+
   // Cache API responses
   if (request.url.includes("/api/")) {
     event.respondWith(
@@ -71,6 +73,12 @@ self.addEventListener("fetch", (event) => {
           return response;
         })
         .catch(() => caches.match(request))
+    );
+  }
+
+  if (!event.respondWith) { 
+    event.respondWith(
+      fetch(event.request).catch(() => caches.match(event.request))
     );
   }
 });

@@ -2,7 +2,7 @@
   "name": "Digital Signage Screen",
   "short_name": "Signage",
   "description": "Digital signage display system for screens",
-  "start_url": "/",
+  "start_url": "/screen",
   "scope": "/",
   "display": "standalone",
   "orientation": "landscape",
@@ -12,12 +12,6 @@
     {
       "src": "/icons/icon-192.png",
       "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/icons/icon-512.png",
-      "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
     }

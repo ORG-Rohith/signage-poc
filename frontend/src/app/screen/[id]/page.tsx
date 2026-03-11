@@ -37,6 +37,15 @@ const Page = () => {
 
   const socketRef = useRef<Socket | null>(null);
 
+  useEffect(() => {
+  if (!files.length) return;
+
+  files.forEach((file) => {
+    const url = `${process.env.NEXT_PUBLIC_API_URL}/uploads/${file.filename}`;
+    fetch(url);
+  });
+}, [files]);
+
   // Service Worker
   useEffect(() => {
     if ("serviceWorker" in navigator) {
@@ -275,6 +284,9 @@ const Page = () => {
                 src={`${process.env.NEXT_PUBLIC_API_URL}/uploads/${file.filename}`}
                 autoPlay
                 muted
+                loop
+                playsInline
+                preload="auto"
                 className="max-w-full max-h-screen object-contain"
               />
             ) : (

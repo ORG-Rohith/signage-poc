@@ -26,27 +26,29 @@ const Page = () => {
   const [screen, setScreen] = useState<Screen | null>(null);
   const [files, setFiles] = useState<FileType[]>([]);
   const [loading, setLoading] = useState(true);
-  const [viewState, setViewState] =
-    useState<"code" | "image" | "busy">("code");
+  const [viewState, setViewState] = useState<"code" | "image" | "busy">("code");
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // 🔥 NEW: connection state
   const [connectionStatus, setConnectionStatus] = useState<
     "connected" | "reconnecting" | "disconnected"
   >("disconnected");
 
   const socketRef = useRef<Socket | null>(null);
 
+  // 🔥 PRELOAD MEDIA FILES (FOR OFFLINE CACHE)
   useEffect(() => {
-  if (!files.length) return;
+    if (!files.length) return;
 
-  files.forEach((file) => {
-    const url = `${process.env.NEXT_PUBLIC_API_URL}/uploads/${file.filename}`;
-    fetch(url);
-  });
-}, [files]);
+    files.forEach((file) => {
+      const url = `${process.env.NEXT_PUBLIC_API_URL}/uploads/${file.filename}`;
 
-  // Service Worker
+      fetch(url, { cache: "reload" })
+        .then(() => console.log("Cached:", url))
+        .catch(() => console.log("Offline, using cache if available"));
+    });
+  }, [files]);
+
+  // 🔥 REGISTER SERVICE WORKER
   useEffect(() => {
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker
@@ -56,7 +58,7 @@ const Page = () => {
     }
   }, []);
 
-  // 🔥 SOCKET WITH CONNECTION STATUS
+  // 🔥 SOCKET CONNECTION
   useEffect(() => {
     const socket = io(`${process.env.NEXT_PUBLIC_API_URL}`, {
       transports: ["websocket"],
@@ -90,7 +92,7 @@ const Page = () => {
     };
   }, []);
 
-  // Fetch screen + files
+  // 🔥 FETCH SCREEN + FILES
   useEffect(() => {
     if (!id) return;
 
@@ -105,7 +107,7 @@ const Page = () => {
               "Content-Type": "application/json",
               "ngrok-skip-browser-warning": "true",
             },
-          }
+          },
         );
 
         const data: Screen = await res.json();
@@ -119,7 +121,7 @@ const Page = () => {
                 "Content-Type": "application/json",
                 "ngrok-skip-browser-warning": "true",
               },
-            }
+            },
           );
 
           const fileData = await resFiles.json();
@@ -137,7 +139,7 @@ const Page = () => {
           setViewState("busy");
         }
       } catch (err) {
-        console.error("Error:", err);
+        console.log("Offline mode: using cached media");
       } finally {
         setLoading(false);
       }
@@ -146,7 +148,7 @@ const Page = () => {
     fetchScreen();
   }, [id]);
 
-  // Join folder room
+  // 🔥 SOCKET ROOM
   useEffect(() => {
     if (!screen?.folderId || !socketRef.current) return;
 
@@ -159,9 +161,7 @@ const Page = () => {
     });
 
     socket.on("fileDeleted", (deletedFileId: number) => {
-      setFiles((prev) =>
-        prev.filter((file) => file.id !== deletedFileId)
-      );
+      setFiles((prev) => prev.filter((file) => file.id !== deletedFileId));
     });
 
     return () => {
@@ -170,6 +170,7 @@ const Page = () => {
     };
   }, [screen?.folderId]);
 
+  // 🔥 INDEX CONTROL
   useEffect(() => {
     if (files.length === 0) {
       setCurrentIndex(0);
@@ -181,13 +182,12 @@ const Page = () => {
     }
   }, [files]);
 
+  // 🔥 SLIDESHOW
   useEffect(() => {
     if (files.length === 0 || viewState !== "image") return;
 
     const interval = setInterval(() => {
-      setCurrentIndex((prev) =>
-        prev === files.length - 1 ? 0 : prev + 1
-      );
+      setCurrentIndex((prev) => (prev === files.length - 1 ? 0 : prev + 1));
     }, 2000);
 
     return () => clearInterval(interval);
@@ -204,21 +204,21 @@ const Page = () => {
             "ngrok-skip-browser-warning": "true",
           },
           body: JSON.stringify({ status }),
-        }
+        },
       );
-    } catch (err) {
-      console.error("Status update failed", err);
+    } catch {
+      console.log("Offline - status not updated");
     }
   };
 
-  // Set offline on close
+  // 🔥 SET OFFLINE ON CLOSE
   useEffect(() => {
     const handleUnload = () => {
       navigator.sendBeacon(
         `${process.env.NEXT_PUBLIC_API_URL}/api/screen/status/${id}`,
         new Blob([JSON.stringify({ status: "offline" })], {
           type: "application/json",
-        })
+        }),
       );
     };
 
@@ -234,49 +234,42 @@ const Page = () => {
 
   return (
     <div className="relative flex items-center justify-center min-h-screen bg-black text-white">
-
-      {/* 🔥 CONNECTION INDICATOR */}
+      {/* CONNECTION STATUS */}
       <div className="absolute top-4 right-4 flex items-center gap-2">
         <div
           className={`w-4 h-4 rounded-full animate-pulse ${
             connectionStatus === "connected"
               ? "bg-green-500"
               : connectionStatus === "reconnecting"
-              ? "bg-yellow-400"
-              : "bg-red-500"
+                ? "bg-yellow-400"
+                : "bg-red-500"
           }`}
         />
         <span className="text-sm">
           {connectionStatus === "connected"
             ? "Connected"
             : connectionStatus === "reconnecting"
-            ? "Reconnecting..."
-            : "Disconnected"}
+              ? "Reconnecting..."
+              : "Disconnected"}
         </span>
       </div>
 
       {viewState === "code" && (
         <div className="text-center">
-          <h1 className="text-5xl font-bold">
-            {screen.uniqueCode}
-          </h1>
+          <h1 className="text-5xl font-bold">{screen.uniqueCode}</h1>
           <p className="mt-3">Enter this code to verify</p>
         </div>
       )}
 
-      {viewState === "image" && (
-        files.length === 0 ? (
-          <p className="text-gray-500">
-            No images or videos found
-          </p>
+      {viewState === "image" &&
+        (files.length === 0 ? (
+          <p className="text-gray-500">No images or videos found</p>
         ) : (
           (() => {
             const file = files[currentIndex];
             if (!file) return null;
 
-            const isVideo = /\.(mp4|webm|ogg)$/i.test(
-              file.filename
-            );
+            const isVideo = /\.(mp4|webm|ogg)$/i.test(file.filename);
 
             return isVideo ? (
               <video
@@ -298,8 +291,7 @@ const Page = () => {
               />
             );
           })()
-        )
-      )}
+        ))}
 
       {viewState === "busy" && (
         <div className="text-center">

@@ -33,22 +33,40 @@ const Page = () => {
     "connected" | "reconnecting" | "disconnected"
   >("disconnected");
 
+  const [isOnline, setIsOnline] = useState(true);
+
   const socketRef = useRef<Socket | null>(null);
 
-  // 🔥 PRELOAD MEDIA FILES (FOR OFFLINE CACHE)
+  /* ------------------------------------------------ */
+  /* INTERNET STATUS DETECTION */
+  /* ------------------------------------------------ */
+
   useEffect(() => {
-    if (!files.length) return;
+    const updateStatus = () => {
+      console.log("Internet:", navigator.onLine);
+      setIsOnline(navigator.onLine);
+    };
 
-    files.forEach((file) => {
-      const url = `${process.env.NEXT_PUBLIC_API_URL}/uploads/${file.filename}`;
+    updateStatus();
 
-      fetch(url, { cache: "reload" })
-        .then(() => console.log("Cached:", url))
-        .catch(() => console.log("Offline, using cache if available"));
-    });
-  }, [files]);
+    window.addEventListener("online", updateStatus);
+    window.addEventListener("offline", updateStatus);
 
-  // 🔥 REGISTER SERVICE WORKER
+    const interval = setInterval(() => {
+      setIsOnline(navigator.onLine);
+    }, 3000);
+
+    return () => {
+      window.removeEventListener("online", updateStatus);
+      window.removeEventListener("offline", updateStatus);
+      clearInterval(interval);
+    };
+  }, []);
+
+  /* ------------------------------------------------ */
+  /* SERVICE WORKER */
+  /* ------------------------------------------------ */
+
   useEffect(() => {
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker
@@ -58,7 +76,10 @@ const Page = () => {
     }
   }, []);
 
-  // 🔥 SOCKET CONNECTION
+  /* ------------------------------------------------ */
+  /* SOCKET CONNECTION */
+  /* ------------------------------------------------ */
+
   useEffect(() => {
     const socket = io(`${process.env.NEXT_PUBLIC_API_URL}`, {
       transports: ["websocket"],
@@ -92,7 +113,10 @@ const Page = () => {
     };
   }, []);
 
-  // 🔥 FETCH SCREEN + FILES
+  /* ------------------------------------------------ */
+  /* FETCH SCREEN + FILES */
+  /* ------------------------------------------------ */
+
   useEffect(() => {
     if (!id) return;
 
@@ -102,12 +126,6 @@ const Page = () => {
 
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/api/screen/${id}`,
-          {
-            headers: {
-              "Content-Type": "application/json",
-              "ngrok-skip-browser-warning": "true",
-            },
-          },
         );
 
         const data: Screen = await res.json();
@@ -116,12 +134,6 @@ const Page = () => {
         if (data.folderId) {
           const resFiles = await fetch(
             `${process.env.NEXT_PUBLIC_API_URL}/api/files/${data.folderId}`,
-            {
-              headers: {
-                "Content-Type": "application/json",
-                "ngrok-skip-browser-warning": "true",
-              },
-            },
           );
 
           const fileData = await resFiles.json();
@@ -139,7 +151,7 @@ const Page = () => {
           setViewState("busy");
         }
       } catch (err) {
-        console.log("Offline mode: using cached media");
+        console.log("Offline mode: using cached data");
       } finally {
         setLoading(false);
       }
@@ -148,7 +160,26 @@ const Page = () => {
     fetchScreen();
   }, [id]);
 
-  // 🔥 SOCKET ROOM
+  /* ------------------------------------------------ */
+  /* PRELOAD MEDIA FOR CACHE */
+  /* ------------------------------------------------ */
+
+  useEffect(() => {
+    if (!files.length) return;
+
+    files.forEach((file) => {
+      const url = `${process.env.NEXT_PUBLIC_API_URL}/uploads/${file.filename}`;
+
+      fetch(url, { cache: "reload" })
+        .then(() => console.log("Cached:", url))
+        .catch(() => console.log("Offline, using cache"));
+    });
+  }, [files]);
+
+  /* ------------------------------------------------ */
+  /* SOCKET ROOM EVENTS */
+  /* ------------------------------------------------ */
+
   useEffect(() => {
     if (!screen?.folderId || !socketRef.current) return;
 
@@ -170,28 +201,23 @@ const Page = () => {
     };
   }, [screen?.folderId]);
 
-  // 🔥 INDEX CONTROL
-  useEffect(() => {
-    if (files.length === 0) {
-      setCurrentIndex(0);
-      return;
-    }
+  /* ------------------------------------------------ */
+  /* SLIDESHOW */
+  /* ------------------------------------------------ */
 
-    if (currentIndex >= files.length) {
-      setCurrentIndex(0);
-    }
-  }, [files]);
-
-  // 🔥 SLIDESHOW
   useEffect(() => {
     if (files.length === 0 || viewState !== "image") return;
 
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev === files.length - 1 ? 0 : prev + 1));
-    }, 2000);
+    }, 5000);
 
     return () => clearInterval(interval);
   }, [files, viewState]);
+
+  /* ------------------------------------------------ */
+  /* UPDATE SCREEN STATUS */
+  /* ------------------------------------------------ */
 
   const updateStatus = async (status: "online" | "offline") => {
     try {
@@ -201,7 +227,6 @@ const Page = () => {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
-            "ngrok-skip-browser-warning": "true",
           },
           body: JSON.stringify({ status }),
         },
@@ -211,7 +236,10 @@ const Page = () => {
     }
   };
 
-  // 🔥 SET OFFLINE ON CLOSE
+  /* ------------------------------------------------ */
+  /* SET OFFLINE WHEN TAB CLOSES */
+  /* ------------------------------------------------ */
+
   useEffect(() => {
     const handleUnload = () => {
       navigator.sendBeacon(
@@ -232,9 +260,19 @@ const Page = () => {
   if (loading) return <p>Loading...</p>;
   if (!screen) return <p>Screen not found</p>;
 
+  const file = files[currentIndex];
+  const isVideo = file && /\.(mp4|webm|ogg)$/i.test(file.filename);
+
   return (
     <div className="relative flex items-center justify-center min-h-screen bg-black text-white">
-      {/* CONNECTION STATUS */}
+      {/* INTERNET STATUS */}
+      {!isOnline && (
+        <div className="absolute top-4 left-4 bg-red-600 px-3 py-1 rounded">
+          Offline Mode
+        </div>
+      )}
+
+      {/* SOCKET STATUS */}
       <div className="absolute top-4 right-4 flex items-center gap-2">
         <div
           className={`w-4 h-4 rounded-full animate-pulse ${
@@ -245,15 +283,10 @@ const Page = () => {
                 : "bg-red-500"
           }`}
         />
-        <span className="text-sm">
-          {connectionStatus === "connected"
-            ? "Connected"
-            : connectionStatus === "reconnecting"
-              ? "Reconnecting..."
-              : "Disconnected"}
-        </span>
+        <span className="text-sm">{connectionStatus}</span>
       </div>
 
+      {/* CODE VIEW */}
       {viewState === "code" && (
         <div className="text-center">
           <h1 className="text-5xl font-bold">{screen.uniqueCode}</h1>
@@ -261,38 +294,34 @@ const Page = () => {
         </div>
       )}
 
+      {/* IMAGE / VIDEO VIEW */}
       {viewState === "image" &&
         (files.length === 0 ? (
-          <p className="text-gray-500">No images or videos found</p>
+          <p className="text-gray-500">No media found</p>
+        ) : isVideo ? (
+          <video
+            key={file.id}
+            src={`${process.env.NEXT_PUBLIC_API_URL}/uploads/${file.filename}`}
+            autoPlay
+            muted
+            playsInline
+            className="max-w-full max-h-screen object-contain"
+            onEnded={() =>
+              setCurrentIndex((prev) =>
+                prev === files.length - 1 ? 0 : prev + 1,
+              )
+            }
+          />
         ) : (
-          (() => {
-            const file = files[currentIndex];
-            if (!file) return null;
-
-            const isVideo = /\.(mp4|webm|ogg)$/i.test(file.filename);
-
-            return isVideo ? (
-              <video
-                key={file.id}
-                src={`${process.env.NEXT_PUBLIC_API_URL}/uploads/${file.filename}`}
-                autoPlay
-                muted
-                loop
-                playsInline
-                preload="auto"
-                className="max-w-full max-h-screen object-contain"
-              />
-            ) : (
-              <img
-                key={file.id}
-                src={`${process.env.NEXT_PUBLIC_API_URL}/uploads/${file.filename}`}
-                alt={file.filename}
-                className="max-w-full max-h-screen object-contain"
-              />
-            );
-          })()
+          <img
+            key={file.id}
+            src={`${process.env.NEXT_PUBLIC_API_URL}/uploads/${file.filename}`}
+            alt={file.filename}
+            className="max-w-full max-h-screen object-contain"
+          />
         ))}
 
+      {/* BUSY VIEW */}
       {viewState === "busy" && (
         <div className="text-center">
           <h1 className="text-2xl font-bold text-red-500">

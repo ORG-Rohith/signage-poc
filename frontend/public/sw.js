@@ -2,57 +2,67 @@ const CACHE_NAME = "screen-cache-v1";
 const MEDIA_CACHE = "media-cache-v1";
 
 self.addEventListener("install", (event) => {
+  console.log("Service Worker Installed");
+
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       return cache.addAll(["/"]);
     }),
   );
+
   self.skipWaiting();
 });
 
 self.addEventListener("activate", (event) => {
+  console.log("Service Worker Activated");
   event.waitUntil(self.clients.claim());
 });
 
 self.addEventListener("fetch", (event) => {
   const request = event.request;
 
-  // MEDIA CACHE (images & videos)
+  // MEDIA FILES (Images & Videos)
   if (request.url.includes("/uploads/")) {
-    event.respondWith(
-      caches.open(MEDIA_CACHE).then(async (cache) => {
-        const cached = await cache.match(request);
-
-        if (cached) {
-          return cached;
-        }
-
-        try {
-          const response = await fetch(request);
-          cache.put(request, response.clone());
-          return response;
-        } catch (err) {
-          return cached;
-        }
-      }),
-    );
+    event.respondWith(cacheFirst(request));
     return;
   }
 
-  // API CACHE
+  // API REQUESTS
   if (request.url.includes("/api/")) {
-    event.respondWith(
-      caches.open(CACHE_NAME).then(async (cache) => {
-        try {
-          const response = await fetch(request);
-          cache.put(request, response.clone());
-          return response;
-        } catch {
-          const cached = await cache.match(request);
-          return cached;
-        }
-      }),
-    );
+    event.respondWith(networkFirst(request));
     return;
   }
+
+  // OTHER REQUESTS
+  event.respondWith(networkFirst(request));
 });
+
+async function cacheFirst(request) {
+  const cache = await caches.open(MEDIA_CACHE);
+
+  const cached = await cache.match(request);
+  if (cached) {
+    return cached;
+  }
+
+  try {
+    const response = await fetch(request);
+    cache.put(request, response.clone());
+    return response;
+  } catch (error) {
+    return cached;
+  }
+}
+
+async function networkFirst(request) {
+  const cache = await caches.open(CACHE_NAME);
+
+  try {
+    const response = await fetch(request);
+    cache.put(request, response.clone());
+    return response;
+  } catch (error) {
+    const cached = await cache.match(request);
+    return cached;
+  }
+}

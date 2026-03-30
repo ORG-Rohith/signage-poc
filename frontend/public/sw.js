@@ -21,19 +21,16 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   const request = event.request;
 
-  // MEDIA FILES (Images & Videos)
   if (request.url.includes("/uploads/")) {
     event.respondWith(cacheFirst(request));
     return;
   }
 
-  // API REQUESTS
   if (request.url.includes("/api/")) {
     event.respondWith(networkFirst(request));
     return;
   }
 
-  // OTHER REQUESTS
   event.respondWith(networkFirst(request));
 });
 

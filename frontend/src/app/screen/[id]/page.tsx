@@ -301,7 +301,8 @@ const Page = () => {
         ) : isVideo ? (
           <video
             key={file.id}
-            src={`${process.env.NEXT_PUBLIC_API_URL}/uploads/${file.filename}`}
+            // src={`${process.env.NEXT_PUBLIC_API_URL}/uploads/${file.filename}`}
+            src={`${process.env.NEXT_PUBLIC_API_URL}/api/files/view/${file.filename}`}
             autoPlay
             muted
             playsInline
@@ -315,7 +316,8 @@ const Page = () => {
         ) : (
           <img
             key={file.id}
-            src={`${process.env.NEXT_PUBLIC_API_URL}/uploads/${file.filename}`}
+            // src={`${process.env.NEXT_PUBLIC_API_URL}/uploads/${file.filename}`}
+            src={`${process.env.NEXT_PUBLIC_API_URL}/api/files/view/${file.filename}`}
             alt={file.filename}
             className="max-w-full max-h-screen object-contain"
           />

@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useParams } from "next/navigation";
@@ -17,23 +16,18 @@ export default function FolderPage() {
   const [files, setFiles] = useState<FileType[]>([]);
   const [loading, setLoading] = useState(true);
 
-
   const handleDelete = async (id: number) => {
-  try {
-    console.log("------------",id);
-    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/files/${id}`, {
-      method: "DELETE",
-    });
+    try {
+      console.log("------------", id);
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/files/${id}`, {
+        method: "DELETE",
+      });
 
-    setFiles(files.filter((file) => file.id !== id));
-  } catch (error) {
-    console.error("Delete failed", error);
-  }
-};
-
-
-
-
+      setFiles(files.filter((file) => file.id !== id));
+    } catch (error) {
+      console.error("Delete failed", error);
+    }
+  };
 
   const fetchFiles = async () => {
     try {
@@ -41,12 +35,12 @@ export default function FolderPage() {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/files/${id}`,
         {
-    method: "GET", // optional for GET, but good practice
-    headers: {
-      "Content-Type": "application/json",
-      "ngrok-skip-browser-warning": "true",
-    },
-  }
+          method: "GET", // optional for GET, but good practice
+          headers: {
+            "Content-Type": "application/json",
+            "ngrok-skip-browser-warning": "true",
+          },
+        },
       );
       const data = await res.json();
       setFiles(data);
@@ -65,10 +59,7 @@ export default function FolderPage() {
     fileInputRef.current?.click();
   };
 
- 
-  const handleFileChange = async (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (!selectedFile) return;
 
@@ -81,22 +72,19 @@ export default function FolderPage() {
       body: formData,
     });
 
-    fetchFiles(); 
+    fetchFiles();
   };
 
   return (
     <div className="min-h-screen p-8 bg-gray-100">
-      <h1 className="text-2xl font-bold mb-6">
-        Folder {id}
-      </h1>
-         <button
-            onClick={openFilePicker}
-            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-          >
-            Upload Image / Video
-          </button>
+      <h1 className="text-2xl font-bold mb-6">Folder {id}</h1>
+      <button
+        onClick={openFilePicker}
+        className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+      >
+        Upload Image / Video
+      </button>
 
-    
       <input
         type="file"
         accept="image/*,video/*"
@@ -109,50 +97,38 @@ export default function FolderPage() {
         <p>Loading...</p>
       ) : files.length === 0 ? (
         <div className="text-center">
-          <p className="mb-4 text-gray-500">
-            No images or videos found
-          </p>
-      
+          <p className="mb-4 text-gray-500">No images or videos found</p>
         </div>
       ) : (
-       
         <div>
           <div className="grid grid-cols-3 gap-4">
             {files.map((file) => (
-              <div
-                key={file.id}
-                className="bg-white p-2 rounded shadow"
-              >
+              <div key={file.id} className="bg-white p-2 rounded shadow">
                 {file.filename.match(/\.(mp4|webm|ogg)$/i) ? (
                   <video
-                    src={`${process.env.NEXT_PUBLIC_API_URL}/uploads/${file.filename}`}
+                    // src={`${process.env.NEXT_PUBLIC_API_URL}/uploads/${file.filename}`}
+                    src={`${process.env.NEXT_PUBLIC_API_URL}/api/files/view/${file.filename}`}
                     controls
                     className="w-full h-full object-cover"
                   />
-                  
                 ) : (
                   <img
-                    src={`${process.env.NEXT_PUBLIC_API_URL}/uploads/${file.filename}`}
-
+                    // src={`${process.env.NEXT_PUBLIC_API_URL}/uploads/${file.filename}`}
+                    src={`${process.env.NEXT_PUBLIC_API_URL}/api/files/view/${file.filename}`}
                     alt={file.filename}
                     className="w-full h-full object-cover"
                   />
-                )
-                
-                }
-                
-                
-        <button
-          onClick={() => handleDelete(file.id)}
-          className="absolute top-2 right-2 bg-red-600 text-white text-xs px-2 py-1 rounded hover:bg-red-700"
-        >
-          Delete
-        </button>
+                )}
+
+                <button
+                  onClick={() => handleDelete(file.id)}
+                  className="absolute top-2 right-2 bg-red-600 text-white text-xs px-2 py-1 rounded hover:bg-red-700"
+                >
+                  Delete
+                </button>
               </div>
             ))}
           </div>
-
-        
         </div>
       )}
     </div>
